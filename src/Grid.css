@@ -1,0 +1,35 @@
+/* src/App.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(50, 20px); /* 50 kolom dengan lebar 20px */
+  grid-template-rows: repeat(50, 20px); /* 50 baris dengan tinggi 20px */
+  gap: 1px; /* Jarak antar node */
+  width: 1020px; /* Total lebar grid = (50 kolom * 20px) + (49 celah * 1px) */
+  height: 1020px; /* Total tinggi grid = (50 baris * 20px) + (49 celah * 1px) */
+  margin: 20px auto;
+  border: 1px solid #ccc;
+}
+
+.node {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+}
+
+.start-node {
+  background-color: red;
+}
+
+.target-node {
+  background-color: green;
+}
+
+.shortest-path {
+  background-color: blue;
+}
+/* src/App.css */
+/* ... CSS yang lain ... */
+
+.shortest-path-node {
+  background-color: rgb(30, 228, 129);
+}
