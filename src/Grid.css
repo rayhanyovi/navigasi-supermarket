@@ -33,3 +33,43 @@
 .shortest-path-node {
   background-color: rgb(30, 228, 129);
 }
+
+.content {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+}
+
+.node-start {
+  background-color: red;
+}
+
+.node {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+  display: inline-block;
+}
+
+.node-start {
+  background-color: #00f;
+}
+
+.node-target {
+  background-color: #f00;
+}
+
+.node-wall {
+  background-color: #555;
+}
+
+.node-shortest-path {
+  background-color: #ff0;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.grid-cell {
+  width: 20px;
+  height: 20px;
+  border: 1px solid black;
+}

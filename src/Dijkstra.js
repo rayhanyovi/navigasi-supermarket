@@ -1,135 +1,52 @@
-// src/Dijkstra.js
-import React, { Component } from "react";
+// Given that you only need unweighted paths, a BFS approach is sufficient
+function bfs(start, targets) {
+  const visited = new Set();
+  const queue = [{ ...start, path: [start] }];
+  const allPaths = [];
 
-class Dijkstra extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      startNode: { row: 0, col: 0 }, // Node awal di pojok kiri atas
-      targetNode: { row: 45, col: 20 }, // Node tengah
-      visitedNodes: [], // Node yang sudah dikunjungi
-      shortestPath: [], // Jalur terpendek
-    };
-  }
+  while (queue.length > 0) {
+    const currentNode = queue.shift();
+    const { x, y, path } = currentNode;
 
-  handleNodeClick(node) {
-    // Implementasikan algoritma Dijkstra di sini
-    const { visitedNodes, shortestPath } = this.calculateShortestPath(
-      this.state.startNode,
-      this.state.targetNode
+    if (visited.has(`${x},${y}`)) continue;
+
+    visited.add(`${x},${y}`);
+
+    // Check if we're on a target node
+    const targetNode = targets.find(
+      (target) => target.x === x && target.y === y
     );
-    this.setState({ visitedNodes, shortestPath });
-
-    // Kirim jalur terpendek ke Grid untuk disorot
-    this.props.highlightShortestPath(shortestPath);
-  }
-
-  calculateShortestPath(startNode, targetNode) {
-    const numRows = 50;
-    const numCols = 50;
-
-    const grid = new Array(numRows);
-    for (let i = 0; i < numRows; i++) {
-      grid[i] = new Array(numCols).fill(1);
+    if (targetNode) {
+      allPaths.push(path.concat(targetNode));
+      targets = targets.filter((target) => target.x !== x || target.y !== y);
+      if (targets.length === 0) break; // All targets visited
     }
 
-    const visitedNodes = [];
-    const distances = new Array(numRows);
-    for (let i = 0; i < numRows; i++) {
-      distances[i] = new Array(numCols).fill(Infinity);
-    }
-
-    const directions = [
-      [0, 1], // Right
-      [1, 0], // Down
-      [0, -1], // Left
-      [-1, 0], // Up
-      [1, 1], // Diagonal down-right
-      [-1, 1], // Diagonal up-right
-      [1, -1], // Diagonal down-left
-      [-1, -1], // Diagonal up-left
-    ];
-
-    const startRow = startNode.row;
-    const startCol = startNode.col;
-    const targetRow = targetNode.row;
-    const targetCol = targetNode.col;
-
-    distances[startRow][startCol] = 0;
-
-    const queue = [{ row: startRow, col: startCol }];
-
-    while (queue.length > 0) {
-      const { row, col } = queue.shift();
-
-      if (row === targetRow && col === targetCol) {
-        break;
-      }
-
-      for (const [dr, dc] of directions) {
-        const newRow = row + dr;
-        const newCol = col + dc;
-
-        if (
-          newRow >= 0 &&
-          newRow < numRows &&
-          newCol >= 0 &&
-          newCol < numCols
-        ) {
-          const newDistance = distances[row][col] + 1;
-
-          if (newDistance < distances[newRow][newCol]) {
-            distances[newRow][newCol] = newDistance;
-            queue.push({ row: newRow, col: newCol });
-          }
-        }
-      }
-
-      visitedNodes.push({ row, col });
-    }
-
-    // Reconstruct the shortest path
-    const shortestPath = [];
-    let row = targetRow;
-    let col = targetCol;
-
-    while (row !== startRow || col !== startCol) {
-      shortestPath.unshift({ row, col });
-      for (const [dr, dc] of directions) {
-        const newRow = row + dr;
-        const newCol = col + dc;
-        if (
-          newRow >= 0 &&
-          newRow < numRows &&
-          newCol >= 0 &&
-          newCol < numCols &&
-          distances[newRow][newCol] === distances[row][col] - 1
-        ) {
-          row = newRow;
-          col = newCol;
-          break;
-        }
-      }
-    }
-
-    return { visitedNodes, shortestPath };
-  }
-
-  render() {
-    return (
-      <div className="dijkstra">
-        <h2>Dijkstra Pathfinding</h2>
-        <p>
-          Start Node: ({this.state.startNode.row}, {this.state.startNode.col})
-        </p>
-        <p>
-          Target Node: ({this.state.targetNode.row}, {this.state.targetNode.col}
-          )
-        </p>
-        {/* Tampilan yang menunjukkan node yang dikunjungi */}
-      </div>
+    // Push neighbors to queue
+    const neighbors = [
+      { x: x + 1, y }, // Right
+      { x: x - 1, y }, // Left
+      { x, y: y + 1 }, // Down
+      { x, y: y - 1 }, // Up
+      { x: x + 1, y: y + 1 }, // Bottom right diagonal
+      { x: x - 1, y: y - 1 }, // Top left diagonal
+      { x: x + 1, y: y - 1 }, // Top right diagonal
+      { x: x - 1, y: y + 1 }, // Bottom left diagonal
+    ].filter(
+      (neigh) => neigh.x >= 0 && neigh.x < 50 && neigh.y >= 0 && neigh.y < 50
     );
+    for (const neighbor of neighbors) {
+      if (!visited.has(`${neighbor.x},${neighbor.y}`)) {
+        queue.push({ ...neighbor, path: path.concat(neighbor) });
+      }
+    }
   }
+
+  // Merge the paths (for now, just join them, there are more efficient ways to do this)
+  const fullPath = allPaths.reduce((acc, currPath) => acc.concat(currPath), []);
+  return fullPath;
 }
 
-export default Dijkstra;
+export function dijkstra(start, targets) {
+  return bfs(start, targets);
+}

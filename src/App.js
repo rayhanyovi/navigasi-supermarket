@@ -1,13 +1,11 @@
-// src/App.js
 import React from "react";
-
-import Grid from "./Grid";
+import PathfindingGrid from "./Grid.js";
+import "./Grid.css";
 
 function App() {
   return (
     <div className="App">
-      <h1>Pathfinding Visualizer with Dijkstra Algorithm</h1>
-      <Grid />
+      <PathfindingGrid />
     </div>
   );
 }
