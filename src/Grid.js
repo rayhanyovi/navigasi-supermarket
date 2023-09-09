@@ -5,10 +5,10 @@ const GRID_SIZE = 50;
 const START_NODE = { x: 0, y: 0 };
 
 const TARGET_NODES = [
-  { x: 10, y: 10, label: "A" },
-  { x: 40, y: 10, label: "B" },
+  { x: 10, y: 11, label: "A" },
+  { x: 42, y: 15, label: "B" },
   { x: 10, y: 40, label: "C" },
-  { x: 40, y: 40, label: "D" },
+  { x: 40, y: 45, label: "D" },
 ];
 
 function PathfindingGrid() {
@@ -27,7 +27,9 @@ function PathfindingGrid() {
       START_NODE,
       selectedTargets.map((label) =>
         TARGET_NODES.find((node) => node.label === label)
-      )
+      ),
+      GRID_SIZE,
+      GRID_SIZE
     );
     setPath(newPath);
   };

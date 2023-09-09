@@ -1,93 +1,120 @@
-// Dijkstra.js
+function isValidNode(x, y, maxRows, maxCols) {
+  return x >= 0 && y >= 0 && x < maxRows && y < maxCols;
+}
 
-// Existing BFS function with small modifications to return path between two points.
-function bfs(start, end) {
+function calculateDistance(nodeA, nodeB) {
+  const dx = Math.abs(nodeA.x - nodeB.x);
+  const dy = Math.abs(nodeA.y - nodeB.y);
+  return Math.max(dx, dy);
+}
+
+function findPathBetweenTwoNodes(start, end, maxRows, maxCols) {
+  const isValid = (x, y) => isValidNode(x, y, maxRows, maxCols);
+
   const visited = new Set();
-  const queue = [{ ...start, path: [start] }];
+  const queue = [{ x: start.x, y: start.y, path: [] }];
 
   while (queue.length > 0) {
-    const currentNode = queue.shift();
-    const { x, y, path } = currentNode;
+    const current = queue.shift();
 
-    if (visited.has(`${x},${y}`)) continue;
+    if (current.x === end.x && current.y === end.y) {
+      return current.path;
+    }
 
-    visited.add(`${x},${y}`);
-
-    if (x === end.x && y === end.y) return path; // End the search if we found the target
+    visited.add(`${current.x},${current.y}`);
 
     const neighbors = [
-      { x: x + 1, y },
-      { x: x - 1, y },
-      { x, y: y + 1 },
-      { x, y: y - 1 },
-      { x: x + 1, y: y + 1 },
-      { x: x - 1, y: y - 1 },
-      { x: x + 1, y: y - 1 },
-      { x: x - 1, y: y + 1 },
-    ].filter(
-      (neigh) => neigh.x >= 0 && neigh.x < 50 && neigh.y >= 0 && neigh.y < 50
-    );
+      { x: current.x - 1, y: current.y },
+      { x: current.x + 1, y: current.y },
+      { x: current.x, y: current.y - 1 },
+      { x: current.x, y: current.y + 1 },
+      { x: current.x - 1, y: current.y - 1 },
+      { x: current.x + 1, y: current.y + 1 },
+      { x: current.x - 1, y: current.y + 1 },
+      { x: current.x + 1, y: current.y - 1 },
+    ];
 
     for (const neighbor of neighbors) {
-      if (!visited.has(`${neighbor.x},${neighbor.y}`)) {
-        queue.push({ ...neighbor, path: path.concat(neighbor) });
+      const { x, y } = neighbor;
+      if (isValid(x, y) && !visited.has(`${x},${y}`)) {
+        const newPath = [...current.path, neighbor];
+        queue.push({ x, y, path: newPath });
+        visited.add(`${x},${y}`);
       }
     }
   }
-  return []; // If no path found
+
+  console.warn("Path not found between given nodes!");
+  return [];
 }
 
-// Utility function to compute permutations of an array
-function permute(array) {
-  if (array.length === 0) return [[]];
-  const firstElement = array[0];
-  const remainingElements = array.slice(1);
-  const permsWithoutFirst = permute(remainingElements);
-  return permsWithoutFirst.reduce((acc, perm) => {
-    for (let i = 0; i <= perm.length; i++) {
-      const permWithFirst = [
-        ...perm.slice(0, i),
-        firstElement,
-        ...perm.slice(i),
-      ];
-      acc.push(permWithFirst);
+export function dijkstra(start, targets, maxRows, maxCols) {
+  const allPermutations = permute(targets);
+
+  let shortestPath = null;
+  let shortestDistance = Infinity;
+
+  for (const permutation of allPermutations) {
+    let remainingTargets = [...permutation];
+    let currentNode = start;
+    const path = [];
+
+    while (remainingTargets.length > 0) {
+      let minDistance = Infinity;
+      let nearestTarget = null;
+      let nearestPath = [];
+
+      for (const target of remainingTargets) {
+        const newPath = findPathBetweenTwoNodes(
+          currentNode,
+          target,
+          maxRows,
+          maxCols
+        );
+        const distance = newPath.length;
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestTarget = target;
+          nearestPath = newPath;
+        }
+      }
+
+      path.push(...nearestPath);
+      currentNode = nearestTarget;
+      remainingTargets = remainingTargets.filter(
+        (target) => target !== nearestTarget
+      );
     }
-    return acc;
-  }, []);
-}
 
-// Helper function to remove overlap between successive BFS paths
-function removeOverlap(firstPath, secondPath) {
-  const last = firstPath[firstPath.length - 1];
-  for (let i = 0; i < secondPath.length; i++) {
-    if (secondPath[i].x === last.x && secondPath[i].y === last.y) {
-      return firstPath.concat(secondPath.slice(i + 1));
+    const totalDistance =
+      calculateDistance(start, permutation[0]) + path.length - 1;
+
+    if (totalDistance < shortestDistance) {
+      shortestDistance = totalDistance;
+      shortestPath = path;
     }
   }
-  return firstPath.concat(secondPath);
-}
 
-export function dijkstra(start, targets) {
-  const allOrders = permute(targets);
-  let shortestPath = [];
-  let shortestLength = Infinity;
-
-  for (let order of allOrders) {
-    let pathLength = 0;
-    let currentPath = [start];
-    let current = start;
-
-    for (let target of order) {
-      const segment = bfs(current, target);
-      pathLength += segment.length;
-      currentPath = removeOverlap(currentPath, segment);
-      current = target;
-    }
-
-    if (pathLength < shortestLength) {
-      shortestLength = pathLength;
-      shortestPath = currentPath;
-    }
-  }
   return shortestPath;
+}
+
+// Function to generate all permutations of an array
+function permute(arr) {
+  const permutations = [];
+  const permuteHelper = (arr, currentIndex) => {
+    if (currentIndex === arr.length - 1) {
+      permutations.push([...arr]);
+      return;
+    }
+
+    for (let i = currentIndex; i < arr.length; i++) {
+      [arr[currentIndex], arr[i]] = [arr[i], arr[currentIndex]];
+      permuteHelper(arr, currentIndex + 1);
+      [arr[currentIndex], arr[i]] = [arr[i], arr[currentIndex]];
+    }
+  };
+
+  permuteHelper(arr, 0);
+  return permutations;
 }
