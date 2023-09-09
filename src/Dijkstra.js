@@ -56,6 +56,17 @@ function permute(array) {
   }, []);
 }
 
+// Helper function to remove overlap between successive BFS paths
+function removeOverlap(firstPath, secondPath) {
+  const last = firstPath[firstPath.length - 1];
+  for (let i = 0; i < secondPath.length; i++) {
+    if (secondPath[i].x === last.x && secondPath[i].y === last.y) {
+      return firstPath.concat(secondPath.slice(i + 1));
+    }
+  }
+  return firstPath.concat(secondPath);
+}
+
 export function dijkstra(start, targets) {
   const allOrders = permute(targets);
   let shortestPath = [];
@@ -63,13 +74,13 @@ export function dijkstra(start, targets) {
 
   for (let order of allOrders) {
     let pathLength = 0;
-    let currentPath = [];
+    let currentPath = [start];
     let current = start;
 
     for (let target of order) {
       const segment = bfs(current, target);
       pathLength += segment.length;
-      currentPath = currentPath.concat(segment);
+      currentPath = removeOverlap(currentPath, segment);
       current = target;
     }
 
