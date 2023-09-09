@@ -6,7 +6,7 @@ class Dijkstra extends Component {
     super(props);
     this.state = {
       startNode: { row: 0, col: 0 }, // Node awal di pojok kiri atas
-      targetNode: { row: 20, col: 21 }, // Node tengah
+      targetNode: { row: 45, col: 20 }, // Node tengah
       visitedNodes: [], // Node yang sudah dikunjungi
       shortestPath: [], // Jalur terpendek
     };

@@ -30,7 +30,7 @@ class Grid extends Component {
           row: row,
           col: col,
           isStart: row === 0 && col === 0, // Tandai StartNode
-          isTarget: row === 20 && col === 21, // Tandai TargetNode
+          isTarget: row === 45 && col === 20, // Tandai TargetNode
           isShortestPath: false, // Inisialisasi node bukan sebagai jalur terpendek
         };
         nodes.push(node);
