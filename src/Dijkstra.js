@@ -8,18 +8,23 @@ function calculateDistance(nodeA, nodeB) {
   return Math.max(dx, dy);
 }
 
-function findPathBetweenTwoNodes(start, end, maxRows, maxCols) {
+function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
   const isValid = (x, y) => isValidNode(x, y, maxRows, maxCols);
 
   const visited = new Set();
-  const queue = [{ x: start.x, y: start.y, path: [] }];
+  const queue = [];
+
+  queue.push({ x: start.x, y: start.y, path: [], distance: 0 });
 
   while (queue.length > 0) {
+    queue.sort((a, b) => a.distance - b.distance);
     const current = queue.shift();
 
     if (current.x === end.x && current.y === end.y) {
       return current.path;
     }
+
+    if (visited.has(`${current.x},${current.y}`)) continue;
 
     visited.add(`${current.x},${current.y}`);
 
@@ -38,8 +43,16 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols) {
       const { x, y } = neighbor;
       if (isValid(x, y) && !visited.has(`${x},${y}`)) {
         const newPath = [...current.path, neighbor];
-        queue.push({ x, y, path: newPath });
-        visited.add(`${x},${y}`);
+        // Check if the neighbor is an obstacle, and skip it if it is
+        if (!obstacles.some((o) => o.x === x && o.y === y)) {
+          const distance = current.distance + 1;
+          queue.push({
+            x,
+            y,
+            path: newPath,
+            distance,
+          });
+        }
       }
     }
   }
@@ -48,7 +61,7 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols) {
   return [];
 }
 
-export function dijkstra(start, targets, maxRows, maxCols) {
+export function dijkstra(start, targets, maxRows, maxCols, obstacles) {
   const allPermutations = permute(targets);
 
   let shortestPath = null;
@@ -69,7 +82,8 @@ export function dijkstra(start, targets, maxRows, maxCols) {
           currentNode,
           target,
           maxRows,
-          maxCols
+          maxCols,
+          obstacles
         );
         const distance = newPath.length;
 

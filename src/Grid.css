@@ -1,5 +1,19 @@
 .grid-cell {
-  width: 20px;
-  height: 20px;
-  border: 1px solid rgb(201, 201, 201);
 }
+
+.navStyle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #690a0a;
+  color: #fff;
+  width: 100%;
+}
+
+.supermarket-map {
+  border: 1px solid red;
+  /* Change this line to set the background color to black */
+}
+
+/* Tambahkan CSS berikut untuk mengatur checkbox dalam satu baris */

@@ -1,19 +1,28 @@
-import React, { useState } from "react";
-import { dijkstra } from "./Dijkstra.js";
+import React, { useState, useEffect } from "react";
+import { dijkstra } from "./Dijkstra.js"; // Updated import statement
+import "./Grid.css";
+import itemsData from "./items.json";
 
-const GRID_SIZE = 50;
-const START_NODE = { x: 0, y: 0 };
+const GRID_SIZE_X = 150; // Number of columns
+const GRID_SIZE_Y = 60; // Number of rows
+const START_NODE = { x: 130, y: 58 };
+const supermarketMap = `${process.env.PUBLIC_URL}/supermarket-map.png`;
 
-const TARGET_NODES = [
-  { x: 10, y: 11, label: "A" },
-  { x: 42, y: 15, label: "B" },
-  { x: 10, y: 40, label: "C" },
-  { x: 40, y: 45, label: "D" },
-];
+const TARGET_NODES = itemsData.items;
 
 function PathfindingGrid() {
   const [selectedTargets, setSelectedTargets] = useState([]);
   const [path, setPath] = useState([]);
+  const [obstacles, setObstacles] = useState([]);
+  const wallsDataFile = process.env.PUBLIC_URL + "/wall.json";
+
+  useEffect(() => {
+    // Load wall data from the JSON file on component mount
+    fetch(wallsDataFile)
+      .then((response) => response.json())
+      .then((data) => setObstacles(data.walls))
+      .catch((error) => console.error("Error loading wall data: ", error));
+  }, []);
 
   const toggleTarget = (label) => {
     setSelectedTargets((prev) => {
@@ -28,52 +37,68 @@ function PathfindingGrid() {
       selectedTargets.map((label) =>
         TARGET_NODES.find((node) => node.label === label)
       ),
-      GRID_SIZE,
-      GRID_SIZE
+      GRID_SIZE_X,
+      GRID_SIZE_Y,
+      obstacles
     );
+
     setPath(newPath);
+  };
+
+  const getNodeColor = (x, y) => {
+    if (x === START_NODE.x && y === START_NODE.y) return "red"; // Start node
+    if (path.some((point) => point.x === x && point.y === y)) return "cyan"; // Path node
+
+    if (
+      selectedTargets.some(
+        (label) =>
+          TARGET_NODES.find((node) => node.label === label).x === x &&
+          TARGET_NODES.find((node) => node.label === label).y === y
+      )
+    )
+      return "blue"; // Target node
+    if (obstacles.some((o) => o.x === x && o.y === y)) return "transparent"; // Obstacle node
+    return "transparent"; // Default
   };
 
   return (
     <div>
-      {TARGET_NODES.map((target) => (
-        <label key={target.label}>
-          <input
-            type="checkbox"
-            checked={selectedTargets.includes(target.label)}
-            onChange={() => toggleTarget(target.label)}
-          />
-          {target.label}
-        </label>
-      ))}
-      <button onClick={handleFindPath}>Find Path</button>
       <div
+        className="supermarket-map"
         style={{
+          width: "1500px",
+          height: "600px",
           display: "grid",
-          gridTemplateColumns: `repeat(${GRID_SIZE}, 20px)`,
+          backgroundImage: `url(${supermarketMap})`,
+          backgroundSize: "100% 100%",
+          gridTemplateColumns: `repeat(${GRID_SIZE_X}, 10px)`,
+          gridTemplateRows: `repeat(${GRID_SIZE_Y}, 10px)`,
         }}>
-        {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-          const x = index % GRID_SIZE;
-          const y = Math.floor(index / GRID_SIZE);
-          const isStart = x === START_NODE.x && y === START_NODE.y;
-          const isTarget = TARGET_NODES.some(
-            (target) => target.x === x && target.y === y
-          );
-          const isInPath = path.some((point) => point.x === x && point.y === y);
-
-          let backgroundColor = "white";
-          if (isStart) backgroundColor = "red";
-          else if (isTarget) backgroundColor = "blue";
-          else if (isInPath) backgroundColor = "yellow";
+        {Array.from({ length: GRID_SIZE_X * GRID_SIZE_Y }).map((_, index) => {
+          const x = index % GRID_SIZE_X;
+          const y = Math.floor(index / GRID_SIZE_X);
 
           return (
             <div
               key={index}
               className="grid-cell"
-              style={{ backgroundColor }}></div>
+              style={{ backgroundColor: getNodeColor(x, y) }}></div>
           );
         })}
       </div>
+      <div className="checkbox-container">
+        {TARGET_NODES.map((target) => (
+          <label key={target.label}>
+            <input
+              type="checkbox"
+              checked={selectedTargets.includes(target.label)}
+              onChange={() => toggleTarget(target.label)}
+            />
+            {target.label}
+          </label>
+        ))}
+      </div>
+      <button onClick={handleFindPath}>Find Path</button>
     </div>
   );
 }
