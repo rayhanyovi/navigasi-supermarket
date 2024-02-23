@@ -1,21 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import PathfindingGrid from "./Grid.js";
 import Navbar from "./Navbar.jsx";
 import "./Grid.css";
 
 function App() {
+  // Define onFindPathClick function here if it's not already defined
+
+  const handleFindPathClick = () => {
+    // Implement your logic to find the path here
+  };
+
   return (
-    <div
-      className="App"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}>
+    <div className="App">
       <Navbar />
       <br />
-      <PathfindingGrid />
+      <PathfindingGrid onFindPathClick={handleFindPathClick} />
     </div>
   );
 }

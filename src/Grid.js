@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { dijkstra } from "./Dijkstra.js"; // Updated import statement
+import PriorityQueue from "js-priority-queue";
+
+import { dijkstra } from "./Dijkstra.js";
 import "./Grid.css";
 import itemsData from "./items.json";
 
@@ -17,7 +19,6 @@ function PathfindingGrid() {
   const wallsDataFile = process.env.PUBLIC_URL + "/wall.json";
 
   useEffect(() => {
-    // Load wall data from the JSON file on component mount
     fetch(wallsDataFile)
       .then((response) => response.json())
       .then((data) => setObstacles(data.walls))
@@ -62,7 +63,15 @@ function PathfindingGrid() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        gap: "10px",
+        padding: "40px 40px",
+        overflow: "hidden",
+      }}
+    >
       <div
         className="supermarket-map"
         style={{
@@ -73,7 +82,8 @@ function PathfindingGrid() {
           backgroundSize: "100% 100%",
           gridTemplateColumns: `repeat(${GRID_SIZE_X}, 10px)`,
           gridTemplateRows: `repeat(${GRID_SIZE_Y}, 10px)`,
-        }}>
+        }}
+      >
         {Array.from({ length: GRID_SIZE_X * GRID_SIZE_Y }).map((_, index) => {
           const x = index % GRID_SIZE_X;
           const y = Math.floor(index / GRID_SIZE_X);
@@ -82,23 +92,31 @@ function PathfindingGrid() {
             <div
               key={index}
               className="grid-cell"
-              style={{ backgroundColor: getNodeColor(x, y) }}></div>
+              style={{ backgroundColor: getNodeColor(x, y) }}
+            ></div>
           );
         })}
       </div>
-      <div className="checkbox-container">
-        {TARGET_NODES.map((target) => (
-          <label key={target.label}>
-            <input
-              type="checkbox"
-              checked={selectedTargets.includes(target.label)}
-              onChange={() => toggleTarget(target.label)}
-            />
-            {target.label}
-          </label>
-        ))}
+      <div className="item-container">
+        <h4 style={{ margin: "0" }}>DAFTAR BELANJA</h4>
+
+        <ul className="checkbox-container">
+          {TARGET_NODES.map((target) => (
+            <li className="list-item">
+              <label key={target.label}>
+                <input
+                  type="checkbox"
+                  checked={selectedTargets.includes(target.label)}
+                  onChange={() => toggleTarget(target.label)}
+                />
+                {target.label}
+              </label>
+            </li>
+          ))}{" "}
+        </ul>
+
+        <button onClick={handleFindPath}>Buat Rute Belanja</button>
       </div>
-      <button onClick={handleFindPath}>Find Path</button>
     </div>
   );
 }

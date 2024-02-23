@@ -1,3 +1,5 @@
+import PriorityQueue from "js-priority-queue";
+
 function isValidNode(x, y, maxRows, maxCols) {
   return x >= 0 && y >= 0 && x < maxRows && y < maxCols;
 }
@@ -33,19 +35,15 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
       { x: current.x + 1, y: current.y },
       { x: current.x, y: current.y - 1 },
       { x: current.x, y: current.y + 1 },
-      { x: current.x - 1, y: current.y - 1 },
-      { x: current.x + 1, y: current.y + 1 },
-      { x: current.x - 1, y: current.y + 1 },
-      { x: current.x + 1, y: current.y - 1 },
     ];
 
     for (const neighbor of neighbors) {
       const { x, y } = neighbor;
       if (isValid(x, y) && !visited.has(`${x},${y}`)) {
         const newPath = [...current.path, neighbor];
-        // Check if the neighbor is an obstacle, and skip it if it is
         if (!obstacles.some((o) => o.x === x && o.y === y)) {
-          const distance = current.distance + 1;
+          const distance =
+            calculateDistance(current, neighbor) + current.distance;
           queue.push({
             x,
             y,
