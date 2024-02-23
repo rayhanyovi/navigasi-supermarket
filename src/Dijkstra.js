@@ -31,10 +31,14 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
     visited.add(`${current.x},${current.y}`);
 
     const neighbors = [
-      { x: current.x - 1, y: current.y },
-      { x: current.x + 1, y: current.y },
-      { x: current.x, y: current.y - 1 },
-      { x: current.x, y: current.y + 1 },
+      { x: current.x - 2, y: current.y },
+      { x: current.x + 2, y: current.y },
+      { x: current.x, y: current.y - 2 },
+      { x: current.x, y: current.y + 2 },
+      { x: current.x + 1, y: current.y + 1 },
+      { x: current.x + 1, y: current.y - 1 },
+      { x: current.x - 1, y: current.y + 1 },
+      { x: current.x - 1, y: current.y - 1 },
     ];
 
     for (const neighbor of neighbors) {
@@ -107,6 +111,8 @@ export function dijkstra(start, targets, maxRows, maxCols, obstacles) {
       shortestPath = path;
     }
   }
+
+  console.log(shortestPath);
 
   return shortestPath;
 }

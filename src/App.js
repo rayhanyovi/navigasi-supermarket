@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PathfindingGrid from "./Grid.js";
 import Navbar from "./Navbar.jsx";
 import "./Grid.css";
-
+import "./index.css";
 function App() {
   // Define onFindPathClick function here if it's not already defined
 

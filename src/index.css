@@ -1,13 +1,56 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.App {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+}
+
+.grid-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 40px 40px;
+}
+
+.supermarket-map {
+  width: 100%;
+  max-width: 1500px;
+  height: 600px;
+  display: grid;
+  background-size: 100% 100%;
+}
+
+.map-container {
+}
+
+@media (max-width: 768px) {
+  .App {
+    height: 100%;
+    overflow-y: scroll;
+  }
+  .grid-container {
+    flex-direction: column;
+    width: 100vw;
+    padding: 0px 0px;
+  }
+  .supermarket-map {
+    width: fit-content;
+  }
+  .map-container {
+    overflow-x: auto;
+  }
 }

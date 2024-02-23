@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import PriorityQueue from "js-priority-queue";
-
+import "./index.css";
 import { dijkstra } from "./Dijkstra.js";
 import "./Grid.css";
 import itemsData from "./items.json";
 
-const GRID_SIZE_X = 150; // Number of columns
-const GRID_SIZE_Y = 60; // Number of rows
+const GRID_SIZE_X = 150;
+const GRID_SIZE_Y = 60;
 const START_NODE = { x: 130, y: 58 };
 const supermarketMap = `${process.env.PUBLIC_URL}/supermarket-map.png`;
 
@@ -47,8 +47,8 @@ function PathfindingGrid() {
   };
 
   const getNodeColor = (x, y) => {
-    if (x === START_NODE.x && y === START_NODE.y) return "red"; // Start node
-    if (path.some((point) => point.x === x && point.y === y)) return "cyan"; // Path node
+    if (x === START_NODE.x && y === START_NODE.y) return "red ";
+    if (path.some((point) => point.x === x && point.y === y)) return "cyan ";
 
     if (
       selectedTargets.some(
@@ -58,47 +58,41 @@ function PathfindingGrid() {
       )
     )
       return "blue"; // Target node
-    if (obstacles.some((o) => o.x === x && o.y === y)) return "transparent"; // Obstacle node
-    return "transparent"; // Default
+    if (obstacles.some((o) => o.x === x && o.y === y)) return "transparent  ";
+    return "transparent  ";
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        gap: "10px",
-        padding: "40px 40px",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        className="supermarket-map"
-        style={{
-          width: "1500px",
-          height: "600px",
-          display: "grid",
-          backgroundImage: `url(${supermarketMap})`,
-          backgroundSize: "100% 100%",
-          gridTemplateColumns: `repeat(${GRID_SIZE_X}, 10px)`,
-          gridTemplateRows: `repeat(${GRID_SIZE_Y}, 10px)`,
-        }}
-      >
-        {Array.from({ length: GRID_SIZE_X * GRID_SIZE_Y }).map((_, index) => {
-          const x = index % GRID_SIZE_X;
-          const y = Math.floor(index / GRID_SIZE_X);
+    <div className="grid-container">
+      <div className="map-container">
+        <div
+          className="supermarket-map"
+          style={{
+            backgroundImage: `url(${supermarketMap})`,
+            gridTemplateColumns: `repeat(${GRID_SIZE_X}, 10px)`,
+            gridTemplateRows: `repeat(${GRID_SIZE_Y}, 10px)`,
+          }}
+        >
+          {Array.from({ length: GRID_SIZE_X * GRID_SIZE_Y }).map((_, index) => {
+            const x = index % GRID_SIZE_X;
+            const y = Math.floor(index / GRID_SIZE_X);
 
-          return (
-            <div
-              key={index}
-              className="grid-cell"
-              style={{ backgroundColor: getNodeColor(x, y) }}
-            ></div>
-          );
-        })}
+            return (
+              <div
+                key={index}
+                className="grid-cell"
+                style={{ backgroundColor: getNodeColor(x, y) }}
+              ></div>
+            );
+          })}
+        </div>
       </div>
+
       <div className="item-container">
-        <h4 style={{ margin: "0" }}>DAFTAR BELANJA</h4>
+        <div className="list-title-container">
+          <h4 style={{ margin: "0" }}>DAFTAR BELANJA</h4>
+          <button onClick={handleFindPath}>Buat Rute Belanja</button>
+        </div>
 
         <ul className="checkbox-container">
           {TARGET_NODES.map((target) => (

@@ -1,6 +1,3 @@
-.grid-cell {
-}
-
 .navStyle {
   display: flex;
   justify-content: space-between;
@@ -39,4 +36,36 @@
   padding: 10px 10px;
   margin-right: 20px;
   border: 1px solid gray;
+}
+
+.list-title-container button {
+  visibility: hidden;
+}
+
+@media (max-width: 768px) {
+  .checkbox-container {
+    padding-left: 10px;
+  }
+  .navStyle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    height: fit-content;
+
+    background-color: #1c58a7;
+    color: #fff;
+    width: 100vhw;
+  }
+  .list-title-container {
+    max-width: 100vw;
+    display: flex;
+    flex-direction: row;
+    padding: 0 20px;
+    justify-content: space-between;
+  }
+
+  .list-title-container button {
+    visibility: visible;
+  }
 }
