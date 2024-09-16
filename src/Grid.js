@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import PriorityQueue from "js-priority-queue";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./index.css";
-import { dijkstra } from "./Dijkstra.js";
+import { dijkstraStepByStep } from "./Dijkstra.js";
 import "./Grid.css";
 import itemsData from "./items.json";
 
@@ -11,12 +10,18 @@ const START_NODE = { x: 130, y: 58 };
 const supermarketMap = `${process.env.PUBLIC_URL}/supermarket-map.png`;
 
 const TARGET_NODES = itemsData.items;
+const VISUALIZATION_SPEED = 10; // Lower value = faster visualization
 
 function PathfindingGrid() {
   const [selectedTargets, setSelectedTargets] = useState([]);
   const [path, setPath] = useState([]);
   const [obstacles, setObstacles] = useState([]);
+  const [gridsTraveled, setGridsTraveled] = useState(0);
+  const [checkedNodes, setCheckedNodes] = useState([]);
+  const [isPathfinding, setIsPathfinding] = useState(false);
   const wallsDataFile = process.env.PUBLIC_URL + "/wall.json";
+  const checkedNodesRef = useRef([]);
+  const animationFrameRef = useRef();
 
   useEffect(() => {
     fetch(wallsDataFile)
@@ -32,24 +37,87 @@ function PathfindingGrid() {
     });
   };
 
-  const handleFindPath = () => {
-    const newPath = dijkstra(
-      START_NODE,
-      selectedTargets.map((label) =>
-        TARGET_NODES.find((node) => node.label === label)
-      ),
-      GRID_SIZE_X,
-      GRID_SIZE_Y,
-      obstacles
+  const updateCheckedNodes = useCallback(() => {
+    const updateBatch = () => {
+      const batchSize = Math.ceil(
+        checkedNodesRef.current.length / VISUALIZATION_SPEED
+      );
+      const batch = checkedNodesRef.current.splice(0, batchSize);
+      setCheckedNodes((prev) => [...prev, ...batch]);
+
+      if (checkedNodesRef.current.length > 0) {
+        animationFrameRef.current = requestAnimationFrame(updateBatch);
+      }
+    };
+
+    if (checkedNodesRef.current.length > 0) {
+      updateBatch();
+    }
+  }, []);
+
+  const onNodeChecked = useCallback(
+    (newNodes) => {
+      checkedNodesRef.current.push(...newNodes);
+      if (!animationFrameRef.current) {
+        updateCheckedNodes();
+      }
+    },
+    [updateCheckedNodes]
+  );
+
+  const handleFindPath = async () => {
+    setCheckedNodes([]);
+    checkedNodesRef.current = [];
+    setPath([]);
+    setGridsTraveled(0);
+    setIsPathfinding(true);
+
+    if (selectedTargets.length === 0) {
+      setIsPathfinding(false);
+      return;
+    }
+
+    const targetNodes = selectedTargets.map((label) =>
+      TARGET_NODES.find((node) => node.label === label)
     );
 
-    setPath(newPath);
+    const onPathFound = (newPath, target) => {
+      return new Promise((resolve) => {
+        setPath(newPath);
+        setGridsTraveled(newPath.length);
+        setTimeout(() => {
+          resolve();
+        }, 1000); // Wait for 1 second before moving to the next target
+      });
+    };
+
+    const fullPath = await dijkstraStepByStep(
+      START_NODE,
+      targetNodes,
+      GRID_SIZE_X,
+      GRID_SIZE_Y,
+      obstacles,
+      onNodeChecked,
+      onPathFound
+    );
+
+    setPath(fullPath);
+    setGridsTraveled(fullPath.length);
+    setIsPathfinding(false);
+
+    // Cancel any remaining animation frames
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    setCheckedNodes([]);
   };
 
   const getNodeColor = (x, y) => {
     if (x === START_NODE.x && y === START_NODE.y) return "red ";
     if (path.some((point) => point.x === x && point.y === y)) return "cyan ";
-
+    if (checkedNodes.some((point) => point.x === x && point.y === y))
+      return "orange";
     if (
       selectedTargets.some(
         (label) =>
@@ -57,7 +125,7 @@ function PathfindingGrid() {
           TARGET_NODES.find((node) => node.label === label).y === y
       )
     )
-      return "blue"; // Target node
+      return "blue";
     if (obstacles.some((o) => o.x === x && o.y === y)) return "transparent  ";
     return "transparent  ";
   };
@@ -91,25 +159,28 @@ function PathfindingGrid() {
       <div className="item-container">
         <div className="list-title-container">
           <h4 style={{ margin: "0" }}>DAFTAR BELANJA</h4>
-          <button onClick={handleFindPath}>Buat Rute Belanja</button>
         </div>
 
         <ul className="checkbox-container">
           {TARGET_NODES.map((target) => (
-            <li className="list-item">
-              <label key={target.label}>
+            <li className="list-item" key={target.label}>
+              <label>
                 <input
                   type="checkbox"
                   checked={selectedTargets.includes(target.label)}
                   onChange={() => toggleTarget(target.label)}
+                  disabled={isPathfinding}
                 />
                 {target.label}
               </label>
             </li>
-          ))}{" "}
+          ))}
         </ul>
+        <button onClick={handleFindPath} disabled={isPathfinding}>
+          {isPathfinding ? "Mencari Rute..." : "Buat Rute Belanja"}
+        </button>
 
-        <button onClick={handleFindPath}>Buat Rute Belanja</button>
+        <p>Jarak yang dilalui: {gridsTraveled} kotak</p>
       </div>
     </div>
   );

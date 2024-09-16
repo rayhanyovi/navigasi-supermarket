@@ -1,5 +1,3 @@
-import PriorityQueue from "js-priority-queue";
-
 function isValidNode(x, y, maxRows, maxCols) {
   return x >= 0 && y >= 0 && x < maxRows && y < maxCols;
 }
@@ -10,7 +8,14 @@ function calculateDistance(nodeA, nodeB) {
   return Math.max(dx, dy);
 }
 
-function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
+async function findPathBetweenTwoNodes(
+  start,
+  end,
+  maxRows,
+  maxCols,
+  obstacles,
+  onNodeChecked
+) {
   const isValid = (x, y) => isValidNode(x, y, maxRows, maxCols);
 
   const visited = new Set();
@@ -29,6 +34,7 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
     if (visited.has(`${current.x},${current.y}`)) continue;
 
     visited.add(`${current.x},${current.y}`);
+    onNodeChecked([{ x: current.x, y: current.y }]);
 
     const neighbors = [
       { x: current.x - 1, y: current.y },
@@ -63,76 +69,55 @@ function findPathBetweenTwoNodes(start, end, maxRows, maxCols, obstacles) {
   return [];
 }
 
-export function dijkstra(start, targets, maxRows, maxCols, obstacles) {
-  const allPermutations = permute(targets);
+export async function dijkstraStepByStep(
+  start,
+  targets,
+  maxRows,
+  maxCols,
+  obstacles,
+  onNodeChecked,
+  onPathFound
+) {
+  let currentNode = start;
+  let remainingTargets = [...targets];
+  let fullPath = [];
 
-  let shortestPath = null;
-  let shortestDistance = Infinity;
+  while (remainingTargets.length > 0) {
+    let nearestTarget = null;
+    let shortestPath = null;
+    let shortestDistance = Infinity;
 
-  for (const permutation of allPermutations) {
-    let remainingTargets = [...permutation];
-    let currentNode = start;
-    const path = [];
-
-    while (remainingTargets.length > 0) {
-      let minDistance = Infinity;
-      let nearestTarget = null;
-      let nearestPath = [];
-
-      for (const target of remainingTargets) {
-        const newPath = findPathBetweenTwoNodes(
-          currentNode,
-          target,
-          maxRows,
-          maxCols,
-          obstacles
-        );
-        const distance = newPath.length;
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestTarget = target;
-          nearestPath = newPath;
-        }
-      }
-
-      path.push(...nearestPath);
-      currentNode = nearestTarget;
-      remainingTargets = remainingTargets.filter(
-        (target) => target !== nearestTarget
+    for (const target of remainingTargets) {
+      const path = await findPathBetweenTwoNodes(
+        currentNode,
+        target,
+        maxRows,
+        maxCols,
+        obstacles,
+        onNodeChecked
       );
+
+      if (path.length < shortestDistance) {
+        shortestDistance = path.length;
+        nearestTarget = target;
+        shortestPath = path;
+      }
     }
 
-    const totalDistance =
-      calculateDistance(start, permutation[0]) + path.length - 1;
+    if (shortestPath) {
+      fullPath = fullPath.concat(shortestPath.slice(1)); // Avoid duplicating the current node
+      currentNode = nearestTarget;
+      remainingTargets = remainingTargets.filter((t) => t !== nearestTarget);
 
-    if (totalDistance < shortestDistance) {
-      shortestDistance = totalDistance;
-      shortestPath = path;
+      // Notify that a path to a target has been found
+      if (onPathFound) {
+        await onPathFound(fullPath, nearestTarget);
+      }
+    } else {
+      console.warn("Unable to find path to all targets");
+      break;
     }
   }
 
-  console.log(shortestPath);
-
-  return shortestPath;
-}
-
-// Function to generate all permutations of an array
-function permute(arr) {
-  const permutations = [];
-  const permuteHelper = (arr, currentIndex) => {
-    if (currentIndex === arr.length - 1) {
-      permutations.push([...arr]);
-      return;
-    }
-
-    for (let i = currentIndex; i < arr.length; i++) {
-      [arr[currentIndex], arr[i]] = [arr[i], arr[currentIndex]];
-      permuteHelper(arr, currentIndex + 1);
-      [arr[currentIndex], arr[i]] = [arr[i], arr[currentIndex]];
-    }
-  };
-
-  permuteHelper(arr, 0);
-  return permutations;
+  return fullPath;
 }
